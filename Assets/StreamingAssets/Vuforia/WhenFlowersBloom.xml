@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig>
+  <Tracking>
+    <ImageTarget name="08_travel" size="1.000000 1.403636" />
+    <ImageTarget name="07_learning" size="1.000000 1.396022" />
+    <ImageTarget name="06_get-married" size="1.000000 1.390991" />
+    <ImageTarget name="05_employment" size="1.000000 1.386691" />
+    <ImageTarget name="04_sui-en" size="1.000000 1.396022" />
+    <ImageTarget name="03_miss-hsieh" size="1.000000 1.391304" />
+    <ImageTarget name="02_hui-ing" size="1.000000 1.398551" />
+    <ImageTarget name="01_chu-yin" size="1.000000 1.393116" />
+  </Tracking>
+</QCARConfig>
