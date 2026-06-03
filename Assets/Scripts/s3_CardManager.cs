@@ -11,6 +11,7 @@ public class s3_CardManager : MonoBehaviour
     [Header("Active Cards")]
     private Dictionary<string, NoteCardData> activeCards =
         new Dictionary<string, NoteCardData>();
+    private List<string> activeOrder = new List<string>();
 
     void Awake()
     {
@@ -38,8 +39,12 @@ public class s3_CardManager : MonoBehaviour
         var card = database.Get(cardName);
         if (card == null) return;
 
-        activeCards[cardName] = card;
+        if (!activeCards.ContainsKey(cardName))
+        {
+            activeOrder.Add(cardName);
+        }
 
+        activeCards[cardName] = card;
         Debug.Log($"ADD: {cardName}");
 
         UpdateMusic();
@@ -51,6 +56,7 @@ public class s3_CardManager : MonoBehaviour
         if (activeCards.ContainsKey(cardName))
         {
             activeCards.Remove(cardName);
+            activeOrder.Remove(cardName);
             Debug.Log($"REMOVE: {cardName}");
         }
 
@@ -65,7 +71,14 @@ public class s3_CardManager : MonoBehaviour
             return;
         }
 
-        var list = new List<NoteCardData>(activeCards.Values);
+        var list = new List<NoteCardData>();
+        foreach (var cardName in activeOrder)
+        {
+            if (activeCards.TryGetValue(cardName, out var card))
+            {
+                list.Add(card);
+            }
+        }
 
         s3_MusicManager.Instance.PlayCards(list);
         Debug.Log($"Playing {list.Count} active card sound(s).");

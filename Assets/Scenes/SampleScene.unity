@@ -1580,6 +1580,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a74b3a59c4f5b8439d3912419ed9509, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mixer: {fileID: 24100000, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  mainGroups:
+  - {fileID: -3066063852705080317, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  - {fileID: 7420411003947866110, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  - {fileID: 4671026794510736959, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  introGroups:
+  - {fileID: 2672048863525215845, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  - {fileID: 856092185133411791, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  - {fileID: -9166232828440392665, guid: 42047501723aa7148a86a7ba2f2a60fc, type: 2}
+  mainVolumeParameters:
+  - S3_Main_0_dB
+  - S3_Main_1_dB
+  - S3_Main_2_dB
+  introVolumeParameters:
+  - S3_Intro_0_dB
+  - S3_Intro_1_dB
+  - S3_Intro_2_dB
+  introDuration: 1
+  introFadeOutDuration: 0.3
+  balanceDuration: 0.5
+  mainLevelDb: 0
+  mutedLevelDb: -80
+  introLevelDb: -6
 --- !u!114 &1786194071
 MonoBehaviour:
   m_ObjectHideFlags: 0
