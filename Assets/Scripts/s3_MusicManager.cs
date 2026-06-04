@@ -10,29 +10,19 @@ public class s3_MusicManager : MonoBehaviour
     [Header("Audio Mixer")]
     public AudioMixer mixer;
     public AudioMixerGroup[] mainGroups;
-    public AudioMixerGroup[] introGroups;
     public string[] mainVolumeParameters =
     {
         "S3_Main_0_dB",
         "S3_Main_1_dB",
         "S3_Main_2_dB"
     };
-    public string[] introVolumeParameters =
-    {
-        "S3_Intro_0_dB",
-        "S3_Intro_1_dB",
-        "S3_Intro_2_dB"
-    };
 
     [Header("Timing")]
-    public float introDuration = 1f;
-    public float introFadeOutDuration = 0.3f;
-    public float balanceDuration = 0.5f;
+    public float channelBlendDuration = 1.5f;
 
     [Header("Levels")]
     public float mainLevelDb = 0f;
     public float mutedLevelDb = -80f;
-    public float introLevelDb = -6f;
 
     readonly List<Voice> voices = new List<Voice>();
 
@@ -52,8 +42,6 @@ public class s3_MusicManager : MonoBehaviour
         StopAllCoroutines();
         StopRemovedVoices(cards);
 
-        bool startedSingleCardIntro = false;
-
         for (int i = 0; i < cards.Count; i++)
         {
             var card = cards[i];
@@ -64,22 +52,8 @@ public class s3_MusicManager : MonoBehaviour
             {
                 voice = CreateVoice(card);
                 voices.Add(voice);
-
-                if (cards.Count == 1)
-                {
-                    ConfigureVoiceSlot(voice, 0);
-                    StartCoroutine(PlaySingleCardIntro(voice));
-                    startedSingleCardIntro = true;
-                }
-                else
-                {
-                    StartMainVoice(voice, mutedLevelDb);
-                }
             }
         }
-
-        if (startedSingleCardIntro)
-            return;
 
         ApplyLayout(cards);
     }
@@ -130,22 +104,19 @@ public class s3_MusicManager : MonoBehaviour
             if (voice == null) continue;
 
             ConfigureVoiceSlot(voice, i);
+            StartMainVoice(voice);
 
-            float pan = GetPan(i, cards.Count);
-            voice.introSource.Stop();
-            SetIntroLevel(voice, mutedLevelDb);
-            StartMainVoice(voice, mutedLevelDb);
-            StartCoroutine(AnimateMainVoice(voice, pan, mainLevelDb, balanceDuration));
+            if (cards.Count == 2)
+            {
+                float separatedPan = i == 0 ? -1f : 1f;
+                voice.mainSource.panStereo = separatedPan;
+                StartCoroutine(BlendPanToCenter(voice, separatedPan, channelBlendDuration));
+            }
+            else
+            {
+                StartCoroutine(AnimatePan(voice, voice.mainSource.panStereo, 0f, channelBlendDuration));
+            }
         }
-    }
-
-    float GetPan(int index, int count)
-    {
-        if (count == 1) return 0f;
-        if (index == 0) return -1f;
-        if (index == 1) return 1f;
-
-        return 0f;
     }
 
     void ConfigureVoiceSlot(Voice voice, int slot)
@@ -155,11 +126,6 @@ public class s3_MusicManager : MonoBehaviour
         if (voice.mainSource != null)
         {
             voice.mainSource.outputAudioMixerGroup = GetGroup(mainGroups, slot);
-        }
-
-        if (voice.introSource != null)
-        {
-            voice.introSource.outputAudioMixerGroup = GetGroup(introGroups, slot);
         }
     }
 
@@ -173,14 +139,8 @@ public class s3_MusicManager : MonoBehaviour
             card.frequency,
             GetGroup(mainGroups, slot)
         );
-        voice.introSource = CreateToneSource(
-            $"{card.cardName}_intro",
-            card.frequency * 0.5f,
-            GetGroup(introGroups, slot)
-        );
 
         SetMainLevel(voice, mutedLevelDb);
-        SetIntroLevel(voice, mutedLevelDb);
 
         return voice;
     }
@@ -209,48 +169,25 @@ public class s3_MusicManager : MonoBehaviour
         return groups[index];
     }
 
-    IEnumerator PlaySingleCardIntro(Voice voice)
+    void StartMainVoice(Voice voice)
     {
-        if (voice == null) yield break;
-
-        StartMainVoice(voice, mutedLevelDb);
-        voice.introSource.Play();
-        SetIntroLevel(voice, introLevelDb);
-
-        yield return new WaitForSeconds(introDuration);
-
-        float elapsed = 0f;
-        while (elapsed < introFadeOutDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / introFadeOutDuration);
-
-            SetIntroLevel(voice, Mathf.Lerp(introLevelDb, mutedLevelDb, t));
-            SetMainLevel(voice, Mathf.Lerp(mutedLevelDb, mainLevelDb, t));
-
-            yield return null;
-        }
-
-        SetIntroLevel(voice, mutedLevelDb);
         SetMainLevel(voice, mainLevelDb);
-        voice.introSource.Stop();
-    }
 
-    void StartMainVoice(Voice voice, float startDb)
-    {
         if (!voice.mainSource.isPlaying)
         {
-            SetMainLevel(voice, startDb);
             voice.mainSource.Play();
         }
     }
 
-    IEnumerator AnimateMainVoice(Voice voice, float targetPan, float targetDb, float duration)
+    IEnumerator BlendPanToCenter(Voice voice, float separatedPan, float duration)
     {
-        if (voice == null) yield break;
+        yield return AnimatePan(voice, separatedPan, 0f, duration);
+    }
 
-        float startPan = voice.mainSource.panStereo;
-        float startDb = GetMainLevel(voice);
+    IEnumerator AnimatePan(Voice voice, float startPan, float targetPan, float duration)
+    {
+        if (voice == null || voice.mainSource == null) yield break;
+
         float elapsed = 0f;
 
         while (elapsed < duration)
@@ -259,15 +196,11 @@ public class s3_MusicManager : MonoBehaviour
             float t = Mathf.Clamp01(elapsed / duration);
 
             voice.mainSource.panStereo = Mathf.Lerp(startPan, targetPan, t);
-            voice.introSource.panStereo = voice.mainSource.panStereo;
-            SetMainLevel(voice, Mathf.Lerp(startDb, targetDb, t));
 
             yield return null;
         }
 
         voice.mainSource.panStereo = targetPan;
-        voice.introSource.panStereo = targetPan;
-        SetMainLevel(voice, targetDb);
     }
 
     void DestroyVoice(Voice voice)
@@ -275,13 +208,9 @@ public class s3_MusicManager : MonoBehaviour
         if (voice == null) return;
 
         SetMainLevel(voice, mutedLevelDb);
-        SetIntroLevel(voice, mutedLevelDb);
 
         if (voice.mainSource != null)
             Destroy(voice.mainSource.gameObject);
-
-        if (voice.introSource != null)
-            Destroy(voice.introSource.gameObject);
     }
 
     Voice GetVoice(string cardName)
@@ -309,26 +238,6 @@ public class s3_MusicManager : MonoBehaviour
         {
             voice.mainSource.volume = DbToLinear(db);
         }
-    }
-
-    void SetIntroLevel(Voice voice, float db)
-    {
-        if (SetMixerLevel(GetParameter(introVolumeParameters, voice.slot), db))
-        {
-            if (voice.introSource != null)
-            {
-                voice.introSource.volume = 1f;
-            }
-        }
-        else if (voice.introSource != null)
-        {
-            voice.introSource.volume = DbToLinear(db);
-        }
-    }
-
-    float GetMainLevel(Voice voice)
-    {
-        return voice.mainDb;
     }
 
     bool SetMixerLevel(string parameter, float db)
@@ -361,7 +270,6 @@ public class s3_MusicManager : MonoBehaviour
         public readonly float frequency;
         public int slot;
         public AudioSource mainSource;
-        public AudioSource introSource;
         public float mainDb;
 
         public Voice(string cardName, float frequency, int slot)
@@ -403,7 +311,8 @@ public class s3_MusicManager : MonoBehaviour
 
             for (int i = 0; i < data.Length; i++)
             {
-                data[i] = Mathf.Sin(phase) * 0.5f;
+                float waveSample = Mathf.Sin(phase) >= 0f ? 1f : -1f;
+                data[i] = waveSample * 0.2f;
                 phase += 2f * Mathf.PI * frequency / sampleRate;
 
                 if (phase > 2f * Mathf.PI)
