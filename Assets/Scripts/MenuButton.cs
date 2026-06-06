@@ -20,6 +20,13 @@ public class MenuButton : MonoBehaviour
         flowManager.StartSection2();
     }
 
+    public void StartSingleSection3()
+    {
+        SignalSection = false;
+        flowManager.SignalSection = SignalSection;
+        flowManager.StartSection3();
+    }
+
     public void StartFullGame()
     {
         SignalSection = true;

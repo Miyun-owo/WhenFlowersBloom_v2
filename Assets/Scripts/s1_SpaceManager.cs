@@ -42,6 +42,7 @@ public class s1_SpaceManager : MonoBehaviour
 
     void Update()
     {
+        Debug.Log($"Is Tracking: {isTracking}");
         if (!isTracking || isConfirmed) return;
 
         UpdateAudio();
@@ -49,7 +50,8 @@ public class s1_SpaceManager : MonoBehaviour
 
     void UpdateAudio()
     {
-        Vector3 camForward = playerCamera.forward;
+        Vector3 rawForward = playerCamera.forward;
+        Vector3 camForward = new Vector3(rawForward.y, rawForward.x, rawForward.z);
         Vector3 dirToTarget =
             (targetSource.transform.position - playerCamera.position).normalized;
 

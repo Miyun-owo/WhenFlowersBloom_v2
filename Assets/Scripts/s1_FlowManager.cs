@@ -23,6 +23,11 @@ public class s1_FlowManager : MonoBehaviour
         uiManager.Active2();
     }
 
+    public void StartSection3()
+    {
+        uiManager.Active3();
+    }
+
     public void OnSetPosition()
     {
         hasSetPosition = true;
