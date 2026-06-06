@@ -1,2 +1,14 @@
 fileFormatVersion: 2
 guid: 4b302d28b19714a4c8f639f7cf5c84fa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - targetIcon: {instanceID: 0}
+  - state1Sprite: {fileID: 21300000, guid: 3434568f550d2e8439019c039c1dadd4, type: 3}
+  - state2Sprite: {fileID: 21300000, guid: a91e5330218529644a83d9297c4f6bf2, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

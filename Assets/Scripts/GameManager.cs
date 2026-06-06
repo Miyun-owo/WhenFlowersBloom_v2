@@ -3,7 +3,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public UIManager uiManager;
-    public FlowManager_1 flowManager;
+    public s1_FlowManager flowManager;
 
     void Start()
     {

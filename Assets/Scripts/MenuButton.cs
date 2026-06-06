@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class MenuButton : MonoBehaviour
 {
-    public FlowManager_1 flowManager;
+    public s1_FlowManager flowManager;
 
     public bool SignalSection { get; private set; }
 
@@ -11,6 +11,13 @@ public class MenuButton : MonoBehaviour
         SignalSection = false;
         flowManager.SignalSection = SignalSection;
         flowManager.StartSection1();
+    }
+
+    public void StartSingleSection2()
+    {
+        SignalSection = false;
+        flowManager.SignalSection = SignalSection;
+        flowManager.StartSection2();
     }
 
     public void StartFullGame()
