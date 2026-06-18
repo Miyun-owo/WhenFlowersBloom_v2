@@ -6,23 +6,28 @@ public class s2_HapticManager : MonoBehaviour
     public static s2_HapticManager Instance;
 
     [Header("Marked Answer")]
-    public float maxStrength = 100f;
-    public float markedPulseDurationMs = 35f;
-    public float markedPulseSharpness = 0.6f;
+    public float maxStrength = 500f;
+    public float strengthReference = 100f;
+    public float hapticStrengthMultiplier = 5f;
+    public float markedPulseDurationMs = 175f;
+    public float markedPulseSharpness = 1f;
     public float markedPulseCooldown = 0.05f;
 
     [Header("Unmarked Answer")]
-    public float boundaryTolerance = 5f;
-    public float shortPulseStrength = 20f;
-    public long shortPulseDurationMs = 35L;
-    public long shortPulseDelayMs = 80L;
+    public float boundaryTolerance = 25f;
+    public float shortPulseStrength = 100f;
+    public long shortPulseDurationMs = 175L;
+    public long shortPulseDelayMs = 400L;
+    public float fallbackVibrationCooldown = 0.4f;
 
     private readonly float[] triggerAngles = { 45f, 135f, 225f, 315f };
     private readonly bool[] boundaryLocks = new bool[4];
+    private float lastFallbackVibrationTime = -999f;
 
     void Awake()
     {
         Instance = this;
+        MOST_HapticFeedback.HapticsEnabled = true;
         MOST_HapticFeedback.Prewarm();
     }
 
@@ -43,7 +48,7 @@ public class s2_HapticManager : MonoBehaviour
 
             if (x <= 45f)
             {
-                float strength = Mathf.Clamp(0.015f * x * x, 0f, maxStrength);
+                float strength = Mathf.Clamp(0.015f * x * x * hapticStrengthMultiplier, 0f, maxStrength);
                 PlayStrengthPulse(strength);
             }
 
@@ -98,6 +103,7 @@ public class s2_HapticManager : MonoBehaviour
         );
 
         MOST_HapticFeedback.GenerateCurveWithCooldown(curve, markedPulseCooldown);
+        PlayFallbackVibration(normalizedStrength);
     }
 
     private void PlayDoubleShortPulse()
@@ -118,6 +124,7 @@ public class s2_HapticManager : MonoBehaviour
         );
 
         MOST_HapticFeedback.GeneratePattern(pattern);
+        PlayFallbackVibration(NormalizeStrength(shortPulseStrength));
     }
 
     private int StrengthToAndroidAmplitude(float strength)
@@ -145,7 +152,18 @@ public class s2_HapticManager : MonoBehaviour
 
     private float NormalizeStrength(float strength)
     {
-        return Mathf.Clamp01(strength / Mathf.Max(0.001f, maxStrength));
+        return Mathf.Clamp01(strength / Mathf.Max(0.001f, strengthReference));
+    }
+
+    private void PlayFallbackVibration(float normalizedStrength)
+    {
+#if UNITY_ANDROID || UNITY_IOS
+        if (normalizedStrength >= 0.2f && Time.unscaledTime - lastFallbackVibrationTime >= fallbackVibrationCooldown)
+        {
+            lastFallbackVibrationTime = Time.unscaledTime;
+            Handheld.Vibrate();
+        }
+#endif
     }
 
     private void ResetBoundaryLocks()

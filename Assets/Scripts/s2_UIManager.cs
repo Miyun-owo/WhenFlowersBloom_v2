@@ -73,8 +73,37 @@ public class s2_UIManager : MonoBehaviour
         {
             if (obj != null)
             {
-                obj.SetActive(state);
+                GameObject controlledObject = ResolveControlledObject(obj);
+                controlledObject.SetActive(state);
             }
         }
+    }
+
+    private GameObject ResolveControlledObject(GameObject obj)
+    {
+        Transform current = obj.transform;
+
+        while (current != null)
+        {
+            if (IsSection2Root(current.name))
+            {
+                return current.gameObject;
+            }
+
+            current = current.parent;
+        }
+
+        return obj;
+    }
+
+    private bool IsSection2Root(string objectName)
+    {
+        string normalizedName = objectName.ToLowerInvariant().Replace("_", "-");
+
+        return normalizedName == "05-employment"
+            || normalizedName == "06-get-married"
+            || normalizedName == "07-learning"
+            || normalizedName == "08-travel"
+            || normalizedName == "emptywheel";
     }
 }

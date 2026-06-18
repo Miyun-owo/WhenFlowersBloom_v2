@@ -3,6 +3,8 @@ using Vuforia;
 
 public class ScanDebug : MonoBehaviour
 {
+    [SerializeField] bool hideSceneCardVisual = true;
+
     ObserverBehaviour observer;
 
     bool isTracked = false;
@@ -10,6 +12,7 @@ public class ScanDebug : MonoBehaviour
 
     int lastDiscreteAngle = -1;
     int observedCardID = -1;
+    UIManager uiManager;
 
     void Start()
     {
@@ -28,9 +31,11 @@ public class ScanDebug : MonoBehaviour
         if (observer != null)
         {
             observedCardID = ParseCardID(observer.TargetName);
+            HideSceneCardVisuals(observer.transform);
         }
         else
         {
+            HideSceneCardVisuals(transform);
             WarnMissingObserver();
         }
     }
@@ -52,18 +57,21 @@ public class ScanDebug : MonoBehaviour
                 isTracked = true;
                 observedCardID = ParseCardID(observer.TargetName);
 
-                if (s3_CardManager.Instance != null)
+                if (ShouldUpdateSection3())
                 {
-                    s3_CardManager.Instance.OnCardEnter(observer.TargetName);
-                }
-                else
-                {
-                    Debug.LogError("No s3_CardManager found in the scene.");
+                    if (s3_CardManager.Instance != null)
+                    {
+                        s3_CardManager.Instance.OnCardEnter(observer.TargetName);
+                    }
+                    else
+                    {
+                        Debug.LogError("No s3_CardManager found in the scene.");
+                    }
                 }
 
                 Debug.Log("ENTER TRACKED: " + observer.TargetName);
 
-                if (IsSection2Card(observedCardID))
+                if (ShouldUpdateSection2(observedCardID))
                 {
                     ShowSection2Wheel(observedCardID);
                 }
@@ -89,7 +97,7 @@ public class ScanDebug : MonoBehaviour
                 );
             }
 
-            if (IsSection2Card(observedCardID))
+            if (ShouldUpdateSection2(observedCardID))
             {
                 UpdateSection2Wheel(observedCardID, correctedAngle, discreteAngle);
             }
@@ -100,18 +108,21 @@ public class ScanDebug : MonoBehaviour
             {
                 isTracked = false;
 
-                if (s3_CardManager.Instance != null)
+                if (ShouldUpdateSection3())
                 {
-                    s3_CardManager.Instance.OnCardExit(observer.TargetName);
-                }
-                else
-                {
-                    Debug.LogError("No s3_CardManager found in the scene.");
+                    if (s3_CardManager.Instance != null)
+                    {
+                        s3_CardManager.Instance.OnCardExit(observer.TargetName);
+                    }
+                    else
+                    {
+                        Debug.LogError("No s3_CardManager found in the scene.");
+                    }
                 }
 
                 Debug.Log("LOST: " + observer.TargetName);
 
-                if (IsSection2Card(observedCardID) && s2_UIManager.Instance != null)
+                if (ShouldUpdateSection2(observedCardID) && s2_UIManager.Instance != null)
                 {
                     s2_UIManager.Instance.ShowUnknownWheel();
                 }
@@ -126,6 +137,26 @@ public class ScanDebug : MonoBehaviour
             || status == Status.LIMITED;
     }
 
+    bool ShouldUpdateSection2(int cardID)
+    {
+        return IsSection2Card(cardID) && GetCurrentSection() == 2;
+    }
+
+    bool ShouldUpdateSection3()
+    {
+        return GetCurrentSection() == 3;
+    }
+
+    int GetCurrentSection()
+    {
+        if (uiManager == null)
+        {
+            uiManager = UIManager.Instance;
+        }
+
+        return uiManager != null ? uiManager.CurrentSection : 0;
+    }
+
     void WarnMissingObserver()
     {
         if (warnedMissingObserver)
@@ -135,6 +166,29 @@ public class ScanDebug : MonoBehaviour
 
         warnedMissingObserver = true;
         Debug.LogWarning($"ScanDebug on {name} cannot find a Vuforia ObserverBehaviour.");
+    }
+
+    void HideSceneCardVisuals(Transform root)
+    {
+        if (!hideSceneCardVisual || root == null || root.GetComponentInParent<Canvas>() != null)
+        {
+            return;
+        }
+
+        foreach (Renderer renderer in root.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.enabled = false;
+        }
+
+        foreach (Collider collider in root.GetComponentsInChildren<Collider>(true))
+        {
+            collider.enabled = false;
+        }
+
+        foreach (Collider2D collider in root.GetComponentsInChildren<Collider2D>(true))
+        {
+            collider.enabled = false;
+        }
     }
 
     int ParseCardID(string targetName)

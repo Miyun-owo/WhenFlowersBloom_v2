@@ -1834,7 +1834,7 @@ MonoBehaviour:
   Section2_Wheel_05:
   - {fileID: 1440820192}
   Section2_Wheel_06:
-  - {fileID: 1861114365}
+  - {fileID: 1811147779}
   Section2_Wheel_07:
   - {fileID: 1070994647}
   Section2_Wheel_08:
@@ -1865,14 +1865,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e4c2a19d6f4350a7c8e9f0123b4567, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxStrength: 100
-  markedPulseDurationMs: 35
-  markedPulseSharpness: 0.6
+  maxStrength: 500
+  strengthReference: 100
+  hapticStrengthMultiplier: 5
+  markedPulseDurationMs: 175
+  markedPulseSharpness: 1
   markedPulseCooldown: 0.05
-  boundaryTolerance: 5
-  shortPulseStrength: 20
-  shortPulseDurationMs: 35
-  shortPulseDelayMs: 80
+  boundaryTolerance: 25
+  shortPulseStrength: 100
+  shortPulseDurationMs: 175
+  shortPulseDelayMs: 400
+  fallbackVibrationCooldown: 0.4
 --- !u!1 &494124323
 GameObject:
   m_ObjectHideFlags: 0

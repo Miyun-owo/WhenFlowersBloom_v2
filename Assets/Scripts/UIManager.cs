@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance;
+
+    public int CurrentSection { get; private set; }
+
     // Section I
     public GameObject[] MenuList;
     public GameObject[] Active1_Common;
@@ -17,6 +21,11 @@ public class UIManager : MonoBehaviour
     // Section II
     //public GameObject[] 
 
+    void Awake()
+    {
+        Instance = this;
+    }
+
     void SetObjectsActive(GameObject[] objects, bool state)
     {
         foreach (GameObject obj in objects)
@@ -26,6 +35,7 @@ public class UIManager : MonoBehaviour
     }
     public void Homepage()
     {
+        CurrentSection = 0;
         SetObjectsActive(MenuList, true);
         SetObjectsActive(Active1_Common, false);
         SetObjectsActive(Section1_Quiz, false);
@@ -40,6 +50,7 @@ public class UIManager : MonoBehaviour
 
     public void Active1()
     {
+        CurrentSection = 1;
         SetObjectsActive(MenuList, false);
         SetObjectsActive(Active1_Common, true);
         SetObjectsActive(Section1_Quiz, true);
@@ -54,6 +65,7 @@ public class UIManager : MonoBehaviour
 
     public void Active1_1()
     {
+        CurrentSection = 1;
         SetObjectsActive(MenuList, false);
         SetObjectsActive(Active1_Common, true);
         SetObjectsActive(Section1_Quiz, false);
@@ -68,6 +80,7 @@ public class UIManager : MonoBehaviour
 
     public void Active2()
     {
+        CurrentSection = 2;
         SetObjectsActive(MenuList, false);
         SetObjectsActive(Active1_Common, false);
         SetObjectsActive(Section1_Quiz, false);
@@ -82,6 +95,7 @@ public class UIManager : MonoBehaviour
 
     public void Active3()
     {
+        CurrentSection = 3;
         SetObjectsActive(MenuList, false);
         SetObjectsActive(Active1_Common, false);
         SetObjectsActive(Section1_Quiz, false);

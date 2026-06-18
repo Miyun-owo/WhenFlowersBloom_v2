@@ -10,6 +10,13 @@ public class s2_WheelUIManager : MonoBehaviour
     public Transform Wheel07;
     public Transform Wheel08;
     public Transform activeWheel;
+    private Transform activeWheelVisual;
+    private readonly System.Collections.Generic.List<WheelPart> activeWheelParts =
+        new System.Collections.Generic.List<WheelPart>();
+
+    private Vector3 activePivotLocalPosition;
+    private float lastAppliedGroupAngle;
+    private bool hasAppliedGroupAngle;
 
     [Header("Rotation")]
     public float normalSpeed = 8f;
@@ -36,18 +43,22 @@ public class s2_WheelUIManager : MonoBehaviour
         else if (cardID == 8) activeWheel = Wheel08;
         else activeWheel = null;
 
+        activeWheelVisual = ResolveWheelVisual(activeWheel, cardID);
+        CaptureWheelParts();
         ResetMotionState();
     }
 
     public void SetActiveWheel(Transform wheel)
     {
         activeWheel = wheel;
+        activeWheelVisual = ResolveWheelVisual(activeWheel, -1);
+        CaptureWheelParts();
         ResetMotionState();
     }
 
     public bool UpdateWheel(float continuousAngle, float discreteAngle, bool isMarkedAnswer)
     {
-        if (activeWheel == null)
+        if (activeWheelVisual == null)
         {
             ResetMotionTracking(continuousAngle);
             return false;
@@ -67,7 +78,7 @@ public class s2_WheelUIManager : MonoBehaviour
             IsRebounding = false;
         }
 
-        float currentZ = activeWheel.localEulerAngles.z;
+        float currentZ = hasAppliedGroupAngle ? lastAppliedGroupAngle : activeWheelVisual.localEulerAngles.z;
         float targetAngle;
         float speed;
 
@@ -89,9 +100,7 @@ public class s2_WheelUIManager : MonoBehaviour
         }
 
         float nextZ = Mathf.LerpAngle(currentZ, targetAngle, Time.deltaTime * speed);
-        Vector3 euler = activeWheel.localEulerAngles;
-        euler.z = nextZ;
-        activeWheel.localEulerAngles = euler;
+        ApplyWheelGroupRotation(nextZ);
 
         previousContinuousAngle = continuousAngle;
         hasPreviousAngle = true;
@@ -129,6 +138,8 @@ public class s2_WheelUIManager : MonoBehaviour
         counteringFrameCount = 0;
         IsCountering = false;
         IsRebounding = false;
+        lastAppliedGroupAngle = activeWheelVisual != null ? activeWheelVisual.localEulerAngles.z : 0f;
+        hasAppliedGroupAngle = activeWheelVisual != null;
     }
 
     private void ResetMotionTracking(float continuousAngle)
@@ -138,5 +149,125 @@ public class s2_WheelUIManager : MonoBehaviour
         counteringFrameCount = 0;
         IsCountering = false;
         IsRebounding = false;
+    }
+
+    private void CaptureWheelParts()
+    {
+        activeWheelParts.Clear();
+
+        if (activeWheel == null || activeWheelVisual == null)
+        {
+            return;
+        }
+
+        activePivotLocalPosition = activeWheel.InverseTransformPoint(activeWheelVisual.position);
+
+        foreach (Transform child in activeWheel)
+        {
+            if (!ShouldRotateWithWheel(child))
+            {
+                continue;
+            }
+
+            activeWheelParts.Add(new WheelPart
+            {
+                transform = child,
+                baseLocalPosition = child.localPosition,
+                baseLocalRotation = child.localRotation
+            });
+        }
+    }
+
+    private bool ShouldRotateWithWheel(Transform child)
+    {
+        if (child == null)
+        {
+            return false;
+        }
+
+        string childName = child.name;
+
+        if (child == activeWheelVisual)
+        {
+            return true;
+        }
+
+        return childName.StartsWith("000_")
+            || childName.StartsWith("090_")
+            || childName.StartsWith("180_")
+            || childName.StartsWith("270_");
+    }
+
+    private void ApplyWheelGroupRotation(float angle)
+    {
+        if (activeWheelParts.Count == 0)
+        {
+            Vector3 euler = activeWheelVisual.localEulerAngles;
+            euler.z = angle;
+            activeWheelVisual.localEulerAngles = euler;
+            return;
+        }
+
+        Quaternion rotation = Quaternion.Euler(0f, 0f, angle);
+
+        foreach (WheelPart part in activeWheelParts)
+        {
+            if (part.transform == null)
+            {
+                continue;
+            }
+
+            Vector3 offset = part.baseLocalPosition - activePivotLocalPosition;
+            part.transform.localPosition = activePivotLocalPosition + rotation * offset;
+            part.transform.localRotation = rotation * part.baseLocalRotation;
+        }
+
+        lastAppliedGroupAngle = angle;
+        hasAppliedGroupAngle = true;
+    }
+
+    private Transform ResolveWheelVisual(Transform wheelRoot, int cardID)
+    {
+        if (wheelRoot == null)
+        {
+            return null;
+        }
+
+        string childName = GetWheelChildName(cardID);
+        if (!string.IsNullOrEmpty(childName))
+        {
+            Transform visual = wheelRoot.Find(childName);
+            if (visual != null)
+            {
+                return visual;
+            }
+        }
+
+        foreach (Transform child in wheelRoot)
+        {
+            if (child.name.EndsWith("_Wheel"))
+            {
+                return child;
+            }
+        }
+
+        return wheelRoot;
+    }
+
+    private string GetWheelChildName(int cardID)
+    {
+        if (cardID == 5) return "05_Wheel";
+        if (cardID == 6) return "06_Wheel";
+        if (cardID == 7) return "07_Wheel";
+        if (cardID == 8) return "08_Wheel";
+
+        return null;
+    }
+
+    private struct WheelPart
+    {
+        public Transform transform;
+        public Vector3 baseLocalPosition;
+        public Quaternion baseLocalRotation;
     }
 }

@@ -26,6 +26,7 @@ public class s1_SpaceManager : MonoBehaviour
 
     private bool isTracking = false;
     private bool isConfirmed = false;
+    private bool lastLoggedTrackingState = false;
 
     public float CurrentDot { get; private set; }
 
@@ -33,16 +34,18 @@ public class s1_SpaceManager : MonoBehaviour
     {
         isTracking = true;
         isConfirmed = false;
+        LogTrackingStateIfChanged();
     }
 
     public void StopTracking()
     {
         isTracking = false;
+        LogTrackingStateIfChanged();
     }
 
     void Update()
     {
-        Debug.Log($"Is Tracking: {isTracking}");
+        LogTrackingStateIfChanged();
         if (!isTracking || isConfirmed) return;
 
         UpdateAudio();
@@ -108,6 +111,19 @@ public class s1_SpaceManager : MonoBehaviour
 
     public void ResetState()
     {
+        isTracking = false;
         isConfirmed = false;
+        LogTrackingStateIfChanged();
+    }
+
+    private void LogTrackingStateIfChanged()
+    {
+        if (lastLoggedTrackingState == isTracking)
+        {
+            return;
+        }
+
+        lastLoggedTrackingState = isTracking;
+        Debug.Log($"S1 spatial audio tracking: {isTracking}");
     }
 }
