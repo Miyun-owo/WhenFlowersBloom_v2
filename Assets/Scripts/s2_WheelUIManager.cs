@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class s2_WheelUIManager : MonoBehaviour
 {
+    public static s2_WheelUIManager Instance;
+
     [Header("Wheel Objects")]
     public Transform Wheel05;
     public Transform Wheel06;
@@ -20,6 +22,11 @@ public class s2_WheelUIManager : MonoBehaviour
     private float previousContinuousAngle;
     private int counteringFrameCount;
     private bool hasPreviousAngle;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     public void SetActiveWheelByCardID(int cardID)
     {

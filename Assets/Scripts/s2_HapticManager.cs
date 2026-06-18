@@ -3,6 +3,8 @@ using Solo.MOST_IN_ONE;
 
 public class s2_HapticManager : MonoBehaviour
 {
+    public static s2_HapticManager Instance;
+
     [Header("Marked Answer")]
     public float maxStrength = 100f;
     public float markedPulseDurationMs = 35f;
@@ -20,6 +22,7 @@ public class s2_HapticManager : MonoBehaviour
 
     void Awake()
     {
+        Instance = this;
         MOST_HapticFeedback.Prewarm();
     }
 

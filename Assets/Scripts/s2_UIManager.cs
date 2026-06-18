@@ -2,11 +2,18 @@ using UnityEngine;
 
 public class s2_UIManager : MonoBehaviour
 {
+    public static s2_UIManager Instance;
+
     public GameObject[] Section2_Wheel_05;
     public GameObject[] Section2_Wheel_06;
     public GameObject[] Section2_Wheel_07;
     public GameObject[] Section2_Wheel_08;
     public GameObject[] Section2_EmptyWheel;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     public void ShowWheelByCardID(int cardID)
     {

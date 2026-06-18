@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class s2_interactiveManager : MonoBehaviour
 {
+    public static s2_interactiveManager Instance;
+
     private class CardRow
     {
         public string cardName;
@@ -24,6 +26,7 @@ public class s2_interactiveManager : MonoBehaviour
 
     void Awake()
     {
+        Instance = this;
         BuildTable();
     }
 

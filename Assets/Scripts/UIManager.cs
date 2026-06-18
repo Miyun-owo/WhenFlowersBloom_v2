@@ -142,7 +142,7 @@ public class UIManager : MonoBehaviour
         SetObjectsActive(Active1_Common, false);
         SetObjectsActive(Section1_Quiz, false);
         SetObjectsActive(Section1_Ans, false);
-        SetObjectsActive(Section2_Wheel_05, true);
+        SetObjectsActive(Section2_Wheel_05, false);
         SetObjectsActive(Section2_Wheel_06, false);
         SetObjectsActive(Section2_Wheel_07, false);
         SetObjectsActive(Section2_Wheel_08, true);
@@ -156,7 +156,7 @@ public class UIManager : MonoBehaviour
         SetObjectsActive(Active1_Common, false);
         SetObjectsActive(Section1_Quiz, false);
         SetObjectsActive(Section1_Ans, false);
-        SetObjectsActive(Section2_Wheel_05, true);
+        SetObjectsActive(Section2_Wheel_05, false);
         SetObjectsActive(Section2_Wheel_06, false);
         SetObjectsActive(Section2_Wheel_07, false);
         SetObjectsActive(Section2_Wheel_08, false);

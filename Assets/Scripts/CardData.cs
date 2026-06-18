@@ -10,7 +10,7 @@ public class CardData : ScriptableObject
 
     public void Init()
     {
-        lookup = new Dictionary<string, NoteCardData>();
+        lookup = new Dictionary<string, NoteCardData>(System.StringComparer.OrdinalIgnoreCase);
 
         if (cards == null) return;
 
@@ -31,7 +31,19 @@ public class CardData : ScriptableObject
         if (lookup.TryGetValue(cardName, out var card))
             return card;
 
+        string normalized = NormalizeCardName(cardName);
+        if (!string.IsNullOrEmpty(normalized) && lookup.TryGetValue(normalized, out card))
+            return card;
+
         Debug.LogWarning($"Card not found: {cardName}");
         return null;
+    }
+
+    string NormalizeCardName(string cardName)
+    {
+        if (string.IsNullOrEmpty(cardName))
+            return cardName;
+
+        return cardName.ToLowerInvariant().Replace("_", "-");
     }
 }
